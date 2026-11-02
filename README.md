@@ -1,5 +1,7 @@
 # fedora-kde-setup
 
+> **Work in progress.** The installer hasn't been run end to end on a fresh system yet, so things may change or break. Check the result before relying on it.
+
 One-command setup for Fedora KDE Plasma 6 that brings over the parts of the macOS layout worth keeping: Cmd-key shortcuts, a top bar showing the focused app, a floating dock, glassy panels and rounded windows. It uses no Apple logos, names or icons, just KDE's own Breeze look, rearranged.
 
 ## Install
