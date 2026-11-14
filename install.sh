@@ -156,6 +156,12 @@ apply_kde_settings() {
     # Search (KRunner) in the middle of the screen
     $k --file krunnerrc --group General --key FreeFloating true
 
+    # Make search 1.5x bigger without scaling anything else (KRunner ignores display scaling)
+    local d="$HOME/.config/systemd/user/plasma-krunner.service.d"
+    mkdir -p "$d"
+    printf '[Service]\nEnvironment=QT_SCALE_FACTOR=1.5\n' > "$d/scale.conf"
+    systemctl --user daemon-reload 2>/dev/null || true
+
     # Never dim, turn off the screen or sleep when idle (screen lock is unchanged)
     $k --file powerdevilrc --group AC --group Display --key DimDisplayWhenIdle false
     $k --file powerdevilrc --group AC --group Display --key TurnOffDisplayWhenIdle false
