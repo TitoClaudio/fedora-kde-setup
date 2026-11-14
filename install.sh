@@ -126,8 +126,8 @@ apply_kde_settings() {
     info "Applying window, search and power settings"
     local k=kwriteconfig6
 
-    # Centered titles, no borders (window buttons stay at the stock KDE position)
-    $k --file kwinrc --group org.kde.kdecoration2 --key BorderSize "None"
+    # Centered titles, thin border so edges can be grabbed from inside (window buttons stay at the stock KDE position)
+    $k --file kwinrc --group org.kde.kdecoration2 --key BorderSize "Tiny"
     $k --file kwinrc --group org.kde.kdecoration2 --key BorderSizeAuto false
     $k --file breezerc --group Windeco --key TitleAlignment "AlignCenterFullWidth"
     $k --file breezerc --group Windeco --key DrawBackgroundGradient false
