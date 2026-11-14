@@ -53,10 +53,11 @@ Your current settings are backed up to `~/kde-setup-backup-<date>/` first.
 ### Desktop
 
 - **Top bar on every screen:** launcher, the bold name of the focused app, system tray and clock. The app name comes from the [Application Title Bar](https://github.com/antroids/application-title-bar) widget, pinned to a reviewed commit.
-- **Floating dock on the main screen:** sized to its icons, with a trash can. It stays visible and floating, and maximized windows stop above it.
+- **Floating dock on the primary screen:** sized to its icons, with Settings, Discover, Files, browser, VS Code, Konsole and System Monitor pinned, and a trash can. It stays visible and floating, and maximized windows stop above it.
 - **Breeze Dark Glass:** a local copy of Breeze Dark with more see-through, blurred panels. It's generated from your installed Breeze files, so nothing is downloaded.
 - **Rounded windows:** the [KDE-Rounded-Corners](https://github.com/matinlotfali/KDE-Rounded-Corners) effect with squircle corners and no dark outline.
 - **Windows:** centered titles and a thin border you can resize from. Buttons stay in the default KDE position.
+- **Wallpaper:** the bundled wallpaper is set on every screen.
 - **Search** opens in the middle of the screen, 1.5x bigger. To change the size, edit `QT_SCALE_FACTOR` in `~/.config/systemd/user/plasma-krunner.service.d/scale.conf`.
 - **App switcher** shows one large icon per app.
 - **Two virtual desktops.**

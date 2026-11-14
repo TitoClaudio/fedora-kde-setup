@@ -1,6 +1,7 @@
 // Plasma desktop script: replaces all panels with a top bar on every screen
 // and a floating dock on the primary screen. Prints "<id>" for each new panel
-// so the installer can set their opacity.
+// so the installer can set their opacity. The installer prepends two lines:
+// PRIMARY (connector name of the primary screen) and WALLPAPER (file path, or "").
 
 panels().forEach(function(p) { p.remove(); });
 
@@ -81,7 +82,9 @@ function dock(screen) {
         "applications:org.kde.discover.desktop",
         "preferred://filemanager",
         "preferred://browser",
-        "applications:com.microsoft.VSCode.desktop"
+        "applications:com.microsoft.VSCode.desktop",
+        "applications:org.kde.konsole.desktop",
+        "applications:org.kde.plasma-systemmonitor.desktop"
     ].join(","));
 
     p.addWidget("org.kde.plasma.marginsseparator");
@@ -89,10 +92,23 @@ function dock(screen) {
     return p;
 }
 
+// Plasma numbers the primary screen 0 unless it can be told by connector
+var main = PRIMARY ? screenForConnector(PRIMARY) : 0;
+if (main < 0) main = 0;
+
+// Same wallpaper on every screen
+if (WALLPAPER) {
+    desktops().forEach(function(d) {
+        d.wallpaperPlugin = "org.kde.image";
+        d.currentConfigGroup = ["Wallpaper", "org.kde.image", "General"];
+        d.writeConfig("Image", "file://" + WALLPAPER);
+    });
+}
+
 var ids = [];
 for (var i = 0; i < screenCount; i++) {
     ids.push(topBar(i).id);
 }
-ids.push(dockSpace(0).id);
-ids.push(dock(0).id);
+ids.push(dockSpace(main).id);
+ids.push(dock(main).id);
 print(ids.join(" "));

@@ -225,9 +225,22 @@ install_title_widget() {
 
 setup_panels() {
     info "Building the top bar and dock"
-    local ids id
+    local ids id primary wallpaper="" src
+    # Primary screen = enabled output with the lowest priority number
+    primary=$(kscreen-doctor --json 2>/dev/null | python3 -c '
+import json, sys
+outs = [o for o in json.load(sys.stdin)["outputs"] if o.get("enabled")]
+print(min(outs, key=lambda o: o.get("priority", 0))["name"] if outs else "")' 2>/dev/null || true)
+    # Copy the bundled wallpaper somewhere permanent
+    src=$(find "$REPO_DIR/wallpaper" -maxdepth 1 -type f \( -name '*.jpg' -o -name '*.png' \) 2>/dev/null | sort | head -1)
+    if [[ -n $src ]]; then
+        mkdir -p "$HOME/.local/share/wallpapers"
+        wallpaper="$HOME/.local/share/wallpapers/$(basename "$src")"
+        cp "$src" "$wallpaper"
+    fi
     ids=$(qdbus-qt6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
-        "$(cat "$REPO_DIR/plasma/panels.js")")
+        "var PRIMARY = \"$primary\"; var WALLPAPER = \"$wallpaper\";
+$(cat "$REPO_DIR/plasma/panels.js")")
     # Always translucent, even when a window is maximized
     for id in $ids; do
         kwriteconfig6 --file plasmashellrc --group PlasmaViews --group "Panel $id" --key panelOpacity 2
