@@ -53,10 +53,10 @@ Your current settings are backed up to `~/kde-setup-backup-<date>/` first.
 ### Desktop
 
 - **Top bar on every screen:** launcher, the bold name of the focused app, system tray and clock. The app name comes from the [Application Title Bar](https://github.com/antroids/application-title-bar) widget, pinned to a reviewed commit.
-- **Floating dock on the main screen:** sized to its icons, with a trash can, and hides when a window covers it.
+- **Floating dock on the main screen:** sized to its icons, with a trash can. It stays visible and floating, and maximized windows stop above it.
 - **Breeze Dark Glass:** a local copy of Breeze Dark with more see-through, blurred panels. It's generated from your installed Breeze files, so nothing is downloaded.
 - **Rounded windows:** the [KDE-Rounded-Corners](https://github.com/matinlotfali/KDE-Rounded-Corners) effect with squircle corners and no dark outline.
-- **Windows:** close / minimize / maximize on the left, including GTK apps like Firefox and VS Code, centered titles and no borders.
+- **Windows:** centered titles and no borders. Buttons stay in the default KDE position.
 - **Search** opens in the middle of the screen.
 - **App switcher** shows one large icon per app.
 - **Two virtual desktops.**

@@ -126,9 +126,7 @@ apply_kde_settings() {
     info "Applying window, search and power settings"
     local k=kwriteconfig6
 
-    # Window buttons on the left (close, minimize, maximize), centered titles, no borders
-    $k --file kwinrc --group org.kde.kdecoration2 --key ButtonsOnLeft "XIA"
-    $k --file kwinrc --group org.kde.kdecoration2 --key ButtonsOnRight ""
+    # Centered titles, no borders (window buttons stay at the stock KDE position)
     $k --file kwinrc --group org.kde.kdecoration2 --key BorderSize "None"
     $k --file kwinrc --group org.kde.kdecoration2 --key BorderSizeAuto false
     $k --file breezerc --group Windeco --key TitleAlignment "AlignCenterFullWidth"
@@ -136,16 +134,15 @@ apply_kde_settings() {
     $k --file breezerc --group Common --key ShadowSize "ShadowVeryLarge"
     $k --file breezerc --group Common --key ShadowStrength 160
 
-    # Same button layout for GTK apps (Firefox, VS Code)
-    local layout="close,minimize,maximize:" f
-    for f in "$HOME/.config/gtk-3.0/settings.ini" "$HOME/.config/gtk-4.0/settings.ini"; do
-        $k --file "$f" --group Settings --key gtk-decoration-layout "$layout"
-    done
-    gsettings set org.gnome.desktop.wm.preferences button-layout "$layout" 2>/dev/null || true
+    # Hide the empty panel that reserves room under the dock
+    kpackagetool6 --type=KWin/Script -i "$REPO_DIR/kwin/hide-dock-space" 2>/dev/null \
+        || kpackagetool6 --type=KWin/Script -u "$REPO_DIR/kwin/hide-dock-space"
+    $k --file kwinrc --group Plugins --key hide-dock-spaceEnabled true
 
     # Blur, rounded corners (no dark outline), Cmd+Tab shows one icon per app
     $k --file kwinrc --group Plugins --key blurEnabled true
     $k --file kwinrc --group Plugins --key kwin4_effect_shapecornersEnabled true
+    $k --file kwinrc --group Round-Corners --key DisableRoundMaximize false
     $k --file kwinrc --group Round-Corners --key OutlineThickness 0
     $k --file kwinrc --group Round-Corners --key InactiveOutlineThickness 0
     $k --file kwinrc --group TabBox --key LayoutName big_icons

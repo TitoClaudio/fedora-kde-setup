@@ -1,0 +1,13 @@
+{
+    "KPackageStructure": "KWin/Script",
+    "KPlugin": {
+        "Id": "hide-dock-space",
+        "Name": "Hide Dock Space",
+        "Description": "Makes the empty panel that reserves room under the dock invisible",
+        "Authors": [{ "Name": "fedora-kde-setup" }],
+        "License": "MIT",
+        "EnabledByDefault": false
+    },
+    "X-Plasma-API": "javascript",
+    "X-Plasma-MainScript": "code/main.js"
+}

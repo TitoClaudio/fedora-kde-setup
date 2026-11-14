@@ -47,6 +47,21 @@ function topBar(screen) {
     return p;
 }
 
+// Invisible panel under the dock. The dock is "windows go below" so it stays
+// floating next to maximized windows, but that mode reserves no space: this
+// panel reserves it instead (dock + its floating gap + a small margin), so
+// windows maximize with their normal animation and stop above the dock.
+function dockSpace(screen) {
+    var p = new Panel("org.kde.panel");
+    p.screen = screen;
+    p.location = "bottom";
+    p.height = 74;
+    p.floating = false;
+    p.lengthMode = "fill";
+    p.hiding = "none";
+    return p;
+}
+
 function dock(screen) {
     var p = new Panel("org.kde.panel");
     p.screen = screen;
@@ -55,7 +70,7 @@ function dock(screen) {
     p.floating = true;
     p.lengthMode = "fit";
     p.alignment = "center";
-    p.hiding = "dodgewindows";
+    p.hiding = "windowsgobelow";
 
     var tasks = p.addWidget("org.kde.plasma.icontasks");
     tasks.currentConfigGroup = ["General"];
@@ -78,5 +93,6 @@ var ids = [];
 for (var i = 0; i < screenCount; i++) {
     ids.push(topBar(i).id);
 }
+ids.push(dockSpace(0).id);
 ids.push(dock(0).id);
 print(ids.join(" "));
