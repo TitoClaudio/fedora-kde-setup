@@ -1,7 +1,8 @@
 // Plasma desktop script: replaces all panels with a top bar on every screen
 // and a floating dock on the primary screen. Prints "<id>" for each new panel
-// so the installer can set their opacity. The installer prepends two lines:
-// PRIMARY (connector name of the primary screen) and WALLPAPER (file path, or "").
+// so the installer can set their opacity. The installer prepends three variables:
+// PRIMARY (connector name of the primary screen), WALLPAPER (file path, or "")
+// and VSCODE_APP (VS Code's desktop file: the RPM's or the Flatpak's).
 
 panels().forEach(function(p) { p.remove(); });
 
@@ -82,7 +83,7 @@ function dock(screen) {
         "applications:org.kde.discover.desktop",
         "preferred://filemanager",
         "preferred://browser",
-        "applications:com.microsoft.VSCode.desktop",
+        "applications:" + VSCODE_APP,
         "applications:org.kde.konsole.desktop",
         "applications:org.kde.plasma-systemmonitor.desktop"
     ].join(","));

@@ -2,7 +2,7 @@
 
 > **Work in progress.** The installer hasn't been run end to end on a fresh system yet, so things may change or break. Check the result before relying on it.
 
-One-command setup for Fedora KDE Plasma 6 that brings over the parts of the macOS layout worth keeping: Cmd-key shortcuts, a top bar showing the focused app, a floating dock, glassy panels and rounded windows. It uses no Apple logos, names or icons, just KDE's own Breeze look, rearranged.
+One-command setup for Fedora KDE Plasma 6 that brings over the parts of the macOS layout worth keeping: Cmd-key shortcuts, a top bar showing the focused app, a floating dock, glassy panels and rounded windows. It also installs VS Code with your Cursor settings and extensions. It uses no Apple logos, names or icons, just KDE's own Breeze look, rearranged.
 
 ## Install
 
@@ -14,7 +14,7 @@ cd fedora-kde-setup
 ./install.sh
 ```
 
-The script asks for your sudo password once to install packages. It also asks which keyboards should get the Mac layout. When it finishes, log out and back in.
+The script asks for your sudo password once to install packages, including VS Code. It also asks which keyboards should get the Mac layout. When it finishes, log out and back in.
 
 Your current settings are backed up to `~/kde-setup-backup-<date>/` first.
 
@@ -63,11 +63,36 @@ Your current settings are backed up to `~/kde-setup-backup-<date>/` first.
 - **Two virtual desktops.**
 - **No idle dimming, screen-off or sleep.** The 5-minute screen lock is left as is.
 
+### VS Code
+
+VS Code is installed from Microsoft's repository and set up with the settings, keybindings, snippets and extensions exported from Cursor into [`vscode/`](vscode/).
+
+If VS Code is already installed, it's kept and nothing is reinstalled:
+
+- Settings are merged: yours stay, and where both set the same one, Cursor's value wins. Comments in your `settings.json` are lost, but the original is in the backup folder.
+- Cursor's keybindings and extensions are added next to yours.
+- If you only have the Flatpak from Flathub, that one is set up and pinned in the dock instead of installing a second copy. If you have both, the Microsoft one is set up and the Flatpak is left as is.
+
+What changes on the way from Cursor:
+
+- Cursor's own builds of Microsoft extensions are replaced with the originals: Cursor Pyright with Pylance, and Remote SSH and Dev Containers with Microsoft's.
+- Cursor-only settings, shortcuts and extensions are left out, and so are extensions disabled in Cursor.
+- Cmd in shortcuts becomes Ctrl, which is what the Cmd key sends here.
+
+To update the copy, run this on the computer with Cursor, then commit the changed files:
+
+```bash
+python3 vscode/export-from-cursor.py
+```
+
+It exports the profile that new Cursor windows open with. Add `--profile NAME` to export a different one. The files are plain text in this repository, so check them for tokens or private paths before you push.
+
 ## Undo
 
 - **Keys:** `sudo systemctl disable --now keyd` gives you a normal keyboard immediately.
 - **Theme:** System Settings → Colors & Themes → Plasma Style → Breeze Dark.
 - **Rounded corners:** System Settings → Window Management → Desktop Effects → untick Rounded Corners.
+- **VS Code:** your previous `settings.json` and `keybindings.json` are in `~/kde-setup-backup-<date>/Code/User/` (or `vscode-flatpak/` for the Flatpak). Remove extensions with `code --uninstall-extension <id>`.
 - **Everything else:** copy the files from your `~/kde-setup-backup-<date>/` folder back into `~/.config/`, then log out and back in.
 
 ## Requirements

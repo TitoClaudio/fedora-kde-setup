@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Fedora KDE setup: Mac-style keys, top bar + dock, glass panels, rounded windows.
+# Fedora KDE setup: Mac-style keys, top bar + dock, glass panels, rounded windows,
+# VS Code with the settings and extensions exported from Cursor.
 # Run as your normal user from a terminal inside a Plasma session: ./install.sh
 set -euo pipefail
 
@@ -11,6 +12,9 @@ TITLE_BAR_COMMIT="54a6666"
 
 # Panel background opacity for the glass theme (Breeze default is 0.85)
 PANEL_OPACITY="0.35"
+
+# VS Code from Flathub, set up instead of the RPM when it's the only one installed
+VSCODE_FLATPAK="com.visualstudio.code"
 
 info() { printf '\n\033[1;34m==>\033[0m %s\n' "$*"; }
 warn() { printf '\033[1;33m!!\033[0m %s\n' "$*"; }
@@ -24,6 +28,7 @@ check_environment() {
     major=$(plasmashell --version | grep -oE '[0-9]+' | head -1)
     [[ $major -ge 6 ]] || die "Plasma 6 or newer is required."
     command -v qdbus-qt6 >/dev/null || die "qdbus-qt6 is missing (package qt6-qttools)."
+    command -v python3 >/dev/null || die "python3 is missing."
     qdbus-qt6 org.kde.plasmashell /PlasmaShell >/dev/null 2>&1 \
         || die "Run this from a terminal inside your Plasma session."
 }
@@ -35,13 +40,26 @@ backup_configs() {
     local f
     for f in plasma-org.kde.plasma.desktop-appletsrc plasmashellrc kwinrc breezerc \
              krunnerrc kdeglobals kglobalshortcutsrc powerdevilrc plasmarc \
-             gtk-3.0/settings.ini gtk-4.0/settings.ini; do
+             gtk-3.0/settings.ini gtk-4.0/settings.ini \
+             Code/User/settings.json Code/User/keybindings.json; do
         if [[ -f "$HOME/.config/$f" ]]; then
             mkdir -p "$dir/$(dirname "$f")"
             cp -a "$HOME/.config/$f" "$dir/$f"
         fi
     done
+    local fp="$HOME/.var/app/$VSCODE_FLATPAK/config/Code/User"
+    for f in settings.json keybindings.json; do
+        if [[ -f $fp/$f ]]; then
+            mkdir -p "$dir/vscode-flatpak"
+            cp -a "$fp/$f" "$dir/vscode-flatpak/$f"
+        fi
+    done
 }
+
+vscode_rpm_installed() { rpm -q code >/dev/null 2>&1; }
+vscode_flatpak_installed() { flatpak info "$VSCODE_FLATPAK" >/dev/null 2>&1; }
+# The Flatpak is set up only when there's no RPM VS Code
+use_vscode_flatpak() { ! vscode_rpm_installed && vscode_flatpak_installed; }
 
 # Lists keyboards as "vendor:product<TAB>name", one per hardware ID
 list_keyboards() {
@@ -89,11 +107,35 @@ choose_keyboards() {
     printf '%s' "$picked"
 }
 
+# Microsoft's VS Code repository, as in https://code.visualstudio.com/docs/setup/linux
+add_vscode_repo() {
+    if [[ -f /etc/yum.repos.d/vscode.repo ]]; then
+        return
+    fi
+    sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+    sudo tee /etc/yum.repos.d/vscode.repo >/dev/null <<'EOF'
+[code]
+name=Visual Studio Code
+baseurl=https://packages.microsoft.com/yumrepos/vscode
+enabled=1
+autorefresh=1
+type=rpm-md
+gpgcheck=1
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
+EOF
+}
+
 install_packages() {
-    info "Installing keyd and the rounded corners effect (asks for your password)"
+    info "Installing keyd, the rounded corners effect and VS Code (asks for your password)"
     sudo dnf copr enable -y alternateved/keyd
     sudo dnf copr enable -y matinlotfali/KDE-Rounded-Corners
-    sudo dnf install -y keyd kwin-effect-roundcorners git
+    local pkgs=(keyd kwin-effect-roundcorners git)
+    # An existing VS Code is kept, whether it's the RPM or the Flatpak
+    if ! vscode_rpm_installed && ! vscode_flatpak_installed; then
+        add_vscode_repo
+        pkgs+=(code)
+    fi
+    sudo dnf install -y --refresh "${pkgs[@]}"
 }
 
 setup_keyd() {
@@ -223,9 +265,41 @@ install_title_widget() {
     rm -rf "$tmp"
 }
 
+# Settings, keybindings, snippets and extensions exported from Cursor
+# by vscode/export-from-cursor.py, merged into what VS Code already has
+setup_vscode() {
+    local src="$REPO_DIR/vscode" dest="$HOME/.config/Code/User" code=(code) id
+    if use_vscode_flatpak; then
+        info "Setting up the VS Code Flatpak with your Cursor settings and extensions"
+        dest="$HOME/.var/app/$VSCODE_FLATPAK/config/Code/User"
+        code=(flatpak run "$VSCODE_FLATPAK")
+    else
+        info "Setting up VS Code with your Cursor settings and extensions"
+        if vscode_flatpak_installed; then
+            warn "The VS Code Flatpak is also installed. It keeps its own settings and is left as is."
+        fi
+    fi
+    python3 "$src/merge.py" "$dest"
+    if [[ -d $src/snippets ]]; then
+        mkdir -p "$dest/snippets"
+        cp -r "$src/snippets/." "$dest/snippets/"
+    fi
+    if [[ -f $src/extensions.txt ]]; then
+        while read -r id; do
+            [[ -n $id && $id != \#* ]] || continue
+            printf '  %s\n' "$id"
+            "${code[@]}" --install-extension "$id" </dev/null >/dev/null 2>&1 \
+                || warn "Couldn't install the VS Code extension $id."
+        done < "$src/extensions.txt"
+    fi
+}
+
 setup_panels() {
     info "Building the top bar and dock"
-    local ids id primary wallpaper="" src
+    local ids id primary wallpaper="" src vscode_app=com.microsoft.VSCode.desktop
+    if use_vscode_flatpak; then
+        vscode_app="$VSCODE_FLATPAK.desktop"
+    fi
     # Primary screen = enabled output with the lowest priority number
     primary=$(kscreen-doctor --json 2>/dev/null | python3 -c '
 import json, sys
@@ -239,7 +313,7 @@ print(min(outs, key=lambda o: o.get("priority", 0))["name"] if outs else "")' 2>
         cp "$src" "$wallpaper"
     fi
     ids=$(qdbus-qt6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
-        "var PRIMARY = \"$primary\"; var WALLPAPER = \"$wallpaper\";
+        "var PRIMARY = \"$primary\"; var WALLPAPER = \"$wallpaper\"; var VSCODE_APP = \"$vscode_app\";
 $(cat "$REPO_DIR/plasma/panels.js")")
     # Always translucent, even when a window is maximized
     for id in $ids; do
@@ -250,7 +324,7 @@ $(cat "$REPO_DIR/plasma/panels.js")")
 
 main() {
     check_environment
-    echo "This will replace your panels and change window, keyboard and theme settings."
+    echo "This will replace your panels and VS Code settings, and change window, keyboard and theme settings."
     read -rp "Continue? [y/N] " answer
     [[ $answer =~ ^[yY] ]] || exit 0
 
@@ -260,6 +334,7 @@ main() {
     apply_kde_settings
     install_glass_theme
     install_title_widget
+    setup_vscode
     setup_panels
 
     info "Done. Log out and back in so every app picks up the new settings."

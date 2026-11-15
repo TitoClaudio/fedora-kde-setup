@@ -1,0 +1,49 @@
+{
+    "workbench.iconTheme": "vscode-icons",
+    "editor.accessibilitySupport": "off",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+        "source.fixAll.eslint": "explicit"
+    },
+    "eslint.validate": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact"
+    ],
+    "eslint.enable": true,
+    "eslint.rules.customizations": [
+        {
+            "rule": "prettier/prettier",
+            "severity": "off"
+        }
+    ],
+    "prettier.enable": true,
+    "prettier.requireConfig": false,
+    "editor.tabSize": 2,
+    "prisma.showPrismaDataPlatformNotification": false,
+    "github.copilot.editor.enableAutoCompletions": true,
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[typescriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "[javascript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": false
+    },
+    "[javascriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.formatOnSave": true
+    },
+    "workbench.colorTheme": "Default Dark Modern",
+    "claudeCode.environmentVariables": [],
+    "claudeCode.preferredLocation": "panel",
+    "claudeCode.selectedModel": "default",
+    "window.zoomPerWindow": false,
+    "window.autoDetectColorScheme": false,
+    "window.zoomLevel": 1
+}
